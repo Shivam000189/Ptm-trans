@@ -1,6 +1,7 @@
 const express = require('express');
 const connectDB = require('./src/config/db');
-const registerUser = require('./src/routes/auth.routes');
+const authUser = require('./src/routes/auth.routes');
+const accountRoutes = require('./src/routes/account');
 require('dotenv').config();
 const cors = require('cors');
 
@@ -12,7 +13,8 @@ app.use(cors());
 
 app.use(express.json());
 
-app.use('/api/auth', registerUser);
+app.use('/api/auth', authUser);
+app.use('/api/account', accountRoutes);
 
 
 app.listen(PORT, () => {

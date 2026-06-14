@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/schema');
+const Bank = require('../models/schema');
+const authMiddleware = require('../middleware/authMiddleware');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const zod = require('zod');
@@ -40,6 +42,10 @@ router.post('/register', async (req, res) => {
             firstName,
             lastName,
             password: hashedPassword
+        });
+        await Bank.create({
+            user: newUser._id,
+            balance:1+Math.random() * 1000
         });
         res.status(201).json({ message: 'User registered successfully', newUser });
     }catch (error) {

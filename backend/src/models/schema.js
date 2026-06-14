@@ -35,5 +35,11 @@ const bankSchema = new mongoose.Schema({
 
 
 
-module.exports = mongoose.model('User', userSchema);
-module.exports = mongoose.model('Bank', bankSchema);
+
+const User = mongoose.model('User', userSchema);
+const Bank = mongoose.model('Bank', bankSchema);
+
+module.exports = {
+	User,
+    Bank
+};
