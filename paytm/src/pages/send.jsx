@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import API from "../api/axios";
 
 export default function SendMoney() {
     const navigate = useNavigate();
     const { state } = useLocation();
     const user = state?.user;
+    const recipientName = user ? `${user.firstName} ${user.lastName}` : "Select a user from dashboard";
     const [amount, setAmount] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!user) {
@@ -15,7 +18,22 @@ export default function SendMoney() {
             return;
         }
 
-        alert(`Transfer initiated to ${user.name} for Rs. ${amount}`);
+        setIsSubmitting(true);
+
+        try {
+            const response = await API.post("/account/transfer", {
+                recipientEmail: user.email,
+                amount: Number(amount),
+            });
+
+            alert(response.data.message || "Transfer initiated successfully.");
+            navigate("/dashboard");
+        } catch (error) {
+            console.error("Transfer error:", error);
+            alert(error.response?.data?.message || "Transfer failed. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -37,13 +55,11 @@ export default function SendMoney() {
 
                 <div className="mt-8 flex items-center gap-4 rounded-xl bg-green-50 p-4">
                     <div className="flex size-12 items-center justify-center rounded-full bg-green-500 text-lg font-bold text-white">
-                        {user?.name?.[0] || "U"}
+                        {user?.firstName?.[0]?.toUpperCase() || "U"}
                     </div>
                     <div>
                         <p className="text-sm text-gray-500">Sending money to</p>
-                        <h2 className="text-xl font-semibold text-gray-900">
-                            {user?.name || "Select a user from dashboard"}
-                        </h2>
+                        <h2 className="text-xl font-semibold text-gray-900">{recipientName}</h2>
                     </div>
                 </div>
 
@@ -56,6 +72,7 @@ export default function SendMoney() {
                             id="amount"
                             type="number"
                             min="1"
+                            step="0.01"
                             placeholder="Enter amount"
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
@@ -66,10 +83,10 @@ export default function SendMoney() {
 
                     <button
                         type="submit"
-                        disabled={!user}
+                        disabled={!user || isSubmitting}
                         className="w-full cursor-pointer rounded-xl bg-green-500 px-4 py-3 text-base font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:bg-gray-300"
                     >
-                        Initiate Transfer
+                        {isSubmitting ? "Processing..." : "Initiate Transfer"}
                     </button>
                 </form>
             </div>

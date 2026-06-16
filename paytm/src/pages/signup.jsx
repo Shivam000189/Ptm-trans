@@ -1,51 +1,99 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import API from "../api/axios";
 
-
 export default function Signup() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        firstname:"",
-        lastname:"",
-        email:"",
-        password:"",
-        });
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-        const navigate = useNavigate();
-    
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        try{
-            const response = await API.post("/auth/signup", formData);
-            console.log(response.data);
+        setIsSubmitting(true);
+
+        try {
+            await API.post("/auth/register", formData);
             alert("Signup successful! Please login.");
-            navigate("/dashboard");
+            navigate("/signin");
         } catch (error) {
             console.error("Signup error:", error);
-            alert("Signup failed. Please try again.");
+            alert(error.response?.data?.message || "Signup failed. Please try again.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
+
     return (
-        <div className="h-screen w-screen flex items-center justify-center bg-gray-400">
-            <div className="bg-white p-8 rounded-md shadow-md w-96 space-y-4"> 
-                <h1 className="text-3xl font-bold text-center">Signup Page</h1>
+        <div className="flex h-screen w-screen items-center justify-center bg-gray-400">
+            <div className="w-96 space-y-4 rounded-md bg-white p-8 shadow-md">
+                <h1 className="text-center text-3xl font-bold">Signup Page</h1>
 
                 <form onSubmit={handleSubmit} className="flex flex-col justify-center">
                     <label htmlFor="firstName" className="text-lg font-semibold">First Name</label>
-                    <input type="text" placeholder="First Name" value={formData.firstname} onChange={(e) => setFormData({...formData, firstname: e.target.value})} className="border-2 border-gray-300 rounded-md p-2 m-2" />
+                    <input
+                        id="firstName"
+                        type="text"
+                        placeholder="First Name"
+                        value={formData.firstName}
+                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                        className="m-2 rounded-md border-2 border-gray-300 p-2"
+                        required
+                    />
+
                     <label htmlFor="lastName" className="text-lg font-semibold">Last Name</label>
-                    <input type="text" placeholder="Last Name" value={formData.lastname} onChange={(e) => setFormData({...formData, lastname: e.target.value})} className="border-2 border-gray-300 rounded-md p-2 m-2" />
+                    <input
+                        id="lastName"
+                        type="text"
+                        placeholder="Last Name"
+                        value={formData.lastName}
+                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                        className="m-2 rounded-md border-2 border-gray-300 p-2"
+                        required
+                    />
+
                     <label htmlFor="email" className="text-lg font-semibold">Email</label>
-                    <input type="email" placeholder="Email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="border-2 border-gray-300 rounded-md p-2 m-2" />
+                    <input
+                        id="email"
+                        type="email"
+                        placeholder="Email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="m-2 rounded-md border-2 border-gray-300 p-2"
+                        required
+                    />
+
                     <label htmlFor="password" className="text-lg font-semibold">Password</label>
-                    <input type="password" placeholder="Password" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="border-2 border-gray-300 rounded-md p-2 m-2" />
-                    <button type="submit" className="bg-black text-white rounded-md hover:opacity-80 p-2 m-2 cursor-pointer">Signup</button>
+                    <input
+                        id="password"
+                        type="password"
+                        placeholder="Password"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        className="m-2 rounded-md border-2 border-gray-300 p-2"
+                        required
+                    />
+
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="m-2 cursor-pointer rounded-md bg-black p-2 text-white hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                        {isSubmitting ? "Signing up..." : "Signup"}
+                    </button>
                 </form>
 
-
-                <p className="text-center">Already have an account? <a href="/signin" className="text-blue-500 hover:underline">Login</a></p>
+                <p className="text-center">
+                    Already have an account?{" "}
+                    <Link to="/signin" className="text-blue-500 hover:underline">
+                        Login
+                    </Link>
+                </p>
             </div>
         </div>
-    )
+    );
 }

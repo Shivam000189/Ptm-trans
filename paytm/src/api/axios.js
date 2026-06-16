@@ -1,12 +1,10 @@
-// src/api.js
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
   withCredentials: true,
 });
-//import.meta.env.VITE_API_URL
-// Request interceptor: attach token if exists
+
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -18,13 +16,13 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: handle 401 errors
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem("token");
-      window.location.href = "/login";
+      localStorage.removeItem("user");
+      window.location.href = "/signin";
     }
     return Promise.reject(error);
   }
