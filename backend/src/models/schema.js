@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const Transaction = require('./transaction');
+const Notification = require('./notification');
 
 const userSchema = new mongoose.Schema({
     email: {
@@ -41,5 +43,7 @@ const Bank = mongoose.model('Bank', bankSchema);
 
 module.exports = {
 	User,
-    Bank
-};
+    Bank,
+    Transaction,
+    Notification
+};

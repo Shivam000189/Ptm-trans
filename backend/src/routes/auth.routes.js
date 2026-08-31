@@ -7,6 +7,8 @@ const jwt = require('jsonwebtoken');
 const zod = require('zod');
 require('dotenv').config();
 
+const JWT_SECRET = process.env.JWT_SECRET || 'paytm-dev-secret';
+
 const registerSchema = zod.object({
     firstName: zod.string().min(1, 'First name is required'),
     lastName: zod.string().min(1, 'Last name is required'),
@@ -36,8 +38,17 @@ router.post('/register', async (req, res) => {
             balance: Math.floor(1 + Math.random() * 1000),
         });
 
+        const token = jwt.sign({ id: newUser._id }, JWT_SECRET, { expiresIn: '1h' });
+
         res.status(201).json({
             message: 'User registered successfully',
+            token,
+            user: {
+                id: newUser._id,
+                firstName: newUser.firstName,
+                lastName: newUser.lastName,
+                email: newUser.email,
+            },
         });
     } catch (error) {
         if (error instanceof zod.ZodError) {
@@ -68,7 +79,7 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
 
         res.status(200).json({
             token,

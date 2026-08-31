@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../api/axios";
+import { connectSocket } from "../socket";
 
 export default function SignIn() {
     const navigate = useNavigate();
@@ -18,6 +19,7 @@ export default function SignIn() {
             const response = await API.post("/auth/login", formData);
             localStorage.setItem("token", response.data.token);
             localStorage.setItem("user", JSON.stringify(response.data.user));
+            connectSocket();
             alert("Login successful!");
             navigate("/dashboard");
         } catch (error) {

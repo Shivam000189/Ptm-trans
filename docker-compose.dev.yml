@@ -1,0 +1,40 @@
+version: '3.8'
+
+# Development Override Configuration
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: builder
+    container_name: paytm-backend-dev
+    environment:
+      NODE_ENV: development
+      MONGO_URI: ${MONGO_URI:-mongodb://root:password@mongodb:27017/paytm?authSource=admin}
+      JWT_SECRET: ${JWT_SECRET:-paytm-dev-secret}
+      PORT: 5000
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:5173}
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: ["npx", "nodemon", "index.js"]
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: ./paytm
+      dockerfile: Dockerfile
+      target: builder
+    container_name: paytm-frontend-dev
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: http://localhost:5000/api
+    volumes:
+      - ./paytm:/app
+      - /app/node_modules
+    command: ["npx", "vite", "--host", "0.0.0.0", "--port", "5173"]
+    ports:
+      - "5173:5173"

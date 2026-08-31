@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: paytm-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-password}
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - paytm-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: paytm-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      MONGO_URI: ${MONGO_URI:-mongodb://root:password@mongodb:27017/paytm?authSource=admin}
+      JWT_SECRET: ${JWT_SECRET:-paytm-dev-secret}
+      PORT: 5000
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:80}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - paytm-network
+
+  frontend:
+    build:
+      context: ./paytm
+      dockerfile: Dockerfile
+    container_name: paytm-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - paytm-network
+
+networks:
+  paytm-network:
+    name: paytm-network
+    driver: bridge
+
+volumes:
+  mongo-data:
+    name: paytm-mongo-data
+    driver: local

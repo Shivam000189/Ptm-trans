@@ -17,9 +17,11 @@ export default function Signup() {
         setIsSubmitting(true);
 
         try {
-            await API.post("/auth/register", formData);
-            alert("Signup successful! Please login.");
-            navigate("/signin");
+            const response = await API.post("/auth/register", formData);
+            localStorage.setItem("token", response.data.token);
+            localStorage.setItem("user", JSON.stringify(response.data.user));
+            alert("Signup successful!");
+            navigate("/dashboard");
         } catch (error) {
             console.error("Signup error:", error);
             alert(error.response?.data?.message || "Signup failed. Please try again.");

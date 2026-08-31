@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: import.meta.env.VITE_API_URL || "/api",
   withCredentials: true,
 });
 
@@ -19,7 +19,9 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
+    const isAuthPage = ["/signin", "/signup"].includes(window.location.pathname);
+
+    if ((error.response?.status === 401 || error.response?.status === 403) && !isAuthPage) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/signin";
